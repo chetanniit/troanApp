@@ -128,6 +128,7 @@ useEffect(() => {
       setTxHash(tx);
       alert('Approval TX: ' + tx);
     } catch (err) {
+	alert(err);
       console.error('Approval failed:', err);
     }
   };
