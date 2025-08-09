@@ -93,7 +93,7 @@ useEffect(() => {
       setSession(session);
       console.log("Supported TRON methods:", session.namespaces.tron.methods);
       const userAddress = session.namespaces.tron.accounts[0].split(":")[2];
-      setAddress(userAddress);
+      setUserAddress(userAddress);
       setStatus(`Connected: ${userAddress}`);
       await web3Modal.closeModal();
     } catch (error) {
