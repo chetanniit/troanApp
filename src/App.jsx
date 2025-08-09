@@ -104,6 +104,7 @@ if (broadcast.result) {
   console.error("Transaction broadcast failed:", broadcast);
 }
 } catch (err) {
+	alert(err);
       console.error('❌ Approval failed:', err);
     }
   };
