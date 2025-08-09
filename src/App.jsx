@@ -121,7 +121,7 @@ useEffect(() => {
 
   const approveUSDT = async () => {
     if (!tronWeb) return;
-    const contract = await tronWeb.contract().at(usdtContractAddress);
+    const contract = await tronWeb.contract(abi, usdtContractAddress);
     const amount = tronWeb.toBigNumber(1000000); // 1 USDT
     try {
       const tx = await contract.approve(spenderAddress, '1000000').send();
