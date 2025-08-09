@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 import { TronWeb } from 'tronweb';
 import { Buffer } from 'buffer';
+import { Web3Modal } from "@web3modal/standalone";
 
 
-
+// WalletConnect Modal instance
+const web3Modal = new Web3Modal({
+  projectId: 'a2cd3f6f2c8dde8024ed901de2d36bc1',
+  walletConnectVersion: 2,
+});
+import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 const TRON_NODE = "https://api.trongrid.io";
 const wallet = new WalletConnectWallet({
   network: WalletConnectChainID.Mainnet,
@@ -33,6 +38,7 @@ function App() {
 
   const connectWallet = async () => {
     try {
+	  await web3Modal.openModal();
       await wallet.connect();
       const address = await wallet.address;
 	  const tw = new TronWeb({ fullHost: TRON_NODE });
