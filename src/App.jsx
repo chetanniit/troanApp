@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { TronWeb } from 'tronweb';
 import { Buffer } from 'buffer';
 import { Web3Modal } from "@web3modal/standalone";
+import { SignClient } from "@walletconnect/sign-client";
 
 
 // WalletConnect Modal instance
@@ -11,6 +12,7 @@ const web3Modal = new Web3Modal({
 });
 import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 const TRON_NODE = "https://api.trongrid.io";
+const MAINNET_CHAIN_ID = "tron:0x2b6653dc";
 const wallet = new WalletConnectWallet({
   network: WalletConnectChainID.Mainnet,
   options: {
@@ -35,19 +37,69 @@ function App() {
   const [userAddress, setUserAddress] = useState('');
   const [status, setStatus] = useState('Not connected');
   const [txHash, setTxHash] = useState('');
+  const [signClient, setSignClient] = useState(null);
+  const [session, setSession] = useState(null);
 
+
+useEffect(() => {
+    const initClients = async () => {
+      try {
+        const client = await SignClient.init({
+          projectId: 'a2cd3f6f2c8dde8024ed901de2d36bc1',
+          metadata: {
+            name: "Tron USDT Sender",
+            description: "Send TRC20 USDT on TRON Mainnet",
+            url: window.location.origin,
+            icons: ["https://example.com/icon.png"],
+          },
+        });
+        setSignClient(client);
+
+        const tw = new TronWeb({ fullHost: TRON_NODE });
+        setTronWeb(tw);
+
+        if (client.session.length) {
+          const lastSession = client.session.get(client.session.keys.at(-1));
+          setSession(lastSession);
+          const userAddress = lastSession.namespaces.tron.accounts[0].split(":")[2];
+          setUserAddress(userAddress);
+          setStatus(`Connected: ${userAddress}`);
+        }
+      } catch (error) {
+        console.error("Init error:", error);
+        setStatus("Init failed");
+      }
+    };
+    initClients();
+  }, []);
   const connectWallet = async () => {
+    if (!signClient) return;
     try {
-	  await web3Modal.openModal();
-      await wallet.connect();
-      const address = await wallet.address;
-	  const tw = new TronWeb({ fullHost: TRON_NODE });
-      setTronWeb(tw);
-      setUserAddress(address);
-      setStatus(`Connected: ${address}`);
-    } catch (err) {
-      console.error('Connection failed:', err);
-      setStatus('Connection failed');
+      setStatus("Connecting... Use Trust Wallet");
+
+      const { uri, approval } = await signClient.connect({
+        requiredNamespaces: {
+          tron: {
+            chains: [MAINNET_CHAIN_ID],
+            methods: ['tron_signTransaction','tron_signMessage'],
+            events: [],
+          },
+        },
+      });
+
+      if (uri) await web3Modal.openModal({ uri });
+
+      const session = await approval();
+      setSession(session);
+      console.log("Supported TRON methods:", session.namespaces.tron.methods);
+      const userAddress = session.namespaces.tron.accounts[0].split(":")[2];
+      setAddress(userAddress);
+      setStatus(`Connected: ${userAddress}`);
+      await web3Modal.closeModal();
+    } catch (error) {
+      console.error("Connection error:", error);
+      setStatus("Connection failed");
+      await web3Modal.closeModal();
     }
   };
 

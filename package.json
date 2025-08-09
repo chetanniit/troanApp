@@ -12,6 +12,7 @@
   "dependencies": {
     "@tronweb3/walletconnect-tron": "^3.0.0",
     "@walletconnect/modal": "^2.7.0",
+    "@walletconnect/sign-client": "^2.21.7",
     "@web3modal/react": "^2.7.1",
     "@web3modal/standalone": "^2.4.3",
     "react": "^19.1.1",
